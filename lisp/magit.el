@@ -1415,8 +1415,12 @@ changes.
 
 (defun magit-branch-maybe-adjust-upstream (branch start-point)
   (--when-let
-      (and (magit-get-upstream-branch branch)
-           (magit-get-indirect-upstream-branch start-point))
+      (or (and (magit-get-upstream-branch branch)
+               (magit-get-indirect-upstream-branch start-point))
+          (and (magit-remote-branch-p start-point)
+               ;; TODO make customizable
+               (string-match-p "/" start-point)
+               "master"))
     (magit-call-git "branch" (concat "--set-upstream-to=" it) branch)))
 
 ;;;###autoload
