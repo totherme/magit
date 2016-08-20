@@ -1444,7 +1444,9 @@ Return a list of two integers: (A>B B>A)."
 
 (defun magit-get (&rest keys)
   "Return the value of Git config entry specified by KEYS."
-  (car (last (apply 'magit-get-all keys))))
+  ;; FIXME https://github.com/magit/magit/commit/11e14785fba9e2476e195af272fff3a4f5dc149b
+  ;; (car (last (apply 'magit-get-all keys)))
+  (magit-git-str "config" (mapconcat 'identity keys ".")))
 
 (defun magit-get-all (&rest keys)
   "Return all values of the Git config entry specified by KEYS."
