@@ -1428,20 +1428,19 @@ Return a list of two integers: (A>B B>A)."
 ;;; Variables
 
 (defun magit-config-get-from-cached-list (key)
-  (gethash ;; `git config --list' downcases first and last components
-           ;; of the key.
-           (replace-regexp-in-string
-            "[^.]+\\'" #'downcase
-            (replace-regexp-in-string "\\`[^.]+" #'downcase key t t)
-            t t)
-           (magit--with-refresh-cache (list 'config (magit-toplevel))
-             (let ((configs (make-hash-table :test 'equal)))
-               (dolist (conf (magit-git-items "config" "--list" "-z"))
-                 (let* ((nl-pos (cl-position ?\n conf))
-                        (key (substring conf 0 nl-pos))
-                        (val (if nl-pos (substring conf (1+ nl-pos)) "")))
-                   (puthash key (nconc (gethash key configs) (list val)) configs)))
-               configs))))
+  (gethash
+   ;; `git config --list' downcases first and last components of the key.
+   (--> key
+        (replace-regexp-in-string "\\`[^.]+" #'downcase it t t)
+        (replace-regexp-in-string "[^.]+\\'" #'downcase it t t))
+   (magit--with-refresh-cache (list 'config (magit-toplevel))
+     (let ((configs (make-hash-table :test 'equal)))
+       (dolist (conf (magit-git-items "config" "--list" "-z"))
+         (let* ((nl-pos (cl-position ?\n conf))
+                (key (substring conf 0 nl-pos))
+                (val (if nl-pos (substring conf (1+ nl-pos)) "")))
+           (puthash key (nconc (gethash key configs) (list val)) configs)))
+       configs))))
 
 (defun magit-get (&rest keys)
   "Return the value of Git config entry specified by KEYS."
@@ -1453,7 +1452,7 @@ Return a list of two integers: (A>B B>A)."
         (key (mapconcat 'identity keys ".")))
     (if magit--refresh-cache
         (magit-config-get-from-cached-list key)
-      (magit-git-items "config" "-z" "--get-all" (mapconcat 'identity keys ".")))))
+      (magit-git-items "config" "-z" "--get-all" key))))
 
 (defun magit-get-boolean (&rest keys)
   "Return the boolean value of Git config entry specified by KEYS."
