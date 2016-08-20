@@ -482,12 +482,7 @@ Type \\[magit-commit-popup] to create a commit.
 
 \\{magit-status-mode-map}"
   :group 'magit-status
-  (hack-dir-local-variables-non-file-buffer)
-  ;; Avoid listing all files as deleted when visiting a bare repo.
-  (when (magit-bare-repo-p)
-    (make-local-variable 'magit-status-sections-hook)
-    (remove-hook 'magit-status-sections-hook #'magit-insert-staged-changes
-                 'local)))
+  (hack-dir-local-variables-non-file-buffer))
 
 ;;;###autoload
 (defun magit-status (&optional directory)
